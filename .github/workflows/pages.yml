@@ -1,5 +1,5 @@
-# 发布「上场」免费试玩版：把仓库里的 site.zip 解压后发布到 GitHub Pages。
-# 更新网站：上传新的 site.zip 覆盖旧文件即可，会自动重新发布。
+# 发布「上场」免费试玩版：把仓库根目录里的网站压缩包（.zip）解压后发布到 GitHub Pages。
+# 更新网站：上传新的压缩包，并删除旧的，会自动重新发布。根目录只应有一个 .zip 文件。
 name: Publish trial site
 on:
   push:
@@ -20,11 +20,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Unpack site.zip
+      - name: Unpack site zip
         run: |
-          if [ ! -f site.zip ]; then echo "site.zip not uploaded yet"; exit 1; fi
+          count=$(ls -1 *.zip 2>/dev/null | wc -l)
+          if [ "$count" -ne 1 ]; then echo "Expected exactly one .zip in repo root, found $count"; exit 1; fi
           mkdir _site
-          unzip -q site.zip -d _site
+          unzip -q *.zip -d _site
           test -f _site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
