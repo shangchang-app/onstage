@@ -1,0 +1,34 @@
+# 发布「上场」免费试玩版：把仓库里的 site.zip 解压后发布到 GitHub Pages。
+# 更新网站：上传新的 site.zip 覆盖旧文件即可，会自动重新发布。
+name: Publish trial site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack site.zip
+        run: |
+          if [ ! -f site.zip ]; then echo "site.zip not uploaded yet"; exit 1; fi
+          mkdir _site
+          unzip -q site.zip -d _site
+          test -f _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
